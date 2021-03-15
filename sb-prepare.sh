@@ -1,10 +1,10 @@
 #!/bin/bash
-
-host=$1
+ 
+host=192.168.99.113
 #host192.168.10.110
-port=3306
-user='sysbench'
-password='MysqP@55w0rd'
+port=$1
+user='root'
+password='chwing'
 table_size=500000
 rate=20
 ps_mode='disable'

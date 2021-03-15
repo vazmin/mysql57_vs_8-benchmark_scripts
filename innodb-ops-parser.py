@@ -64,7 +64,7 @@ def innodb_ops_list_to_csv(a, h):
     l_inserted = []
     l_read = []
     l_updated = []
-    for csv in sorted(a.iterkeys()):
+    for csv in sorted(a):
         thd = a[csv]  
         row.append(csv)  
         #print csv    
@@ -108,7 +108,8 @@ def main(host_ip):
     status_log=host_ip + "-global-status.log"
     
     a = []
-    b = {16:[],32:[],64:[],128:[],256:[],512:[],1024:[],2048:[]}
+    # TODO: 
+    b = {16:[],32:[],64:[],128:[]}
 
     ndex = 0
     cur_thd = 16
@@ -118,7 +119,7 @@ def main(host_ip):
     p = subprocess.Popen("cat %(status_log)s  |grep 'Innodb_rows_[deleted|inserted|read|updated]' -i | tr '\t' ','" % locals(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
     for line in p.stdout.readlines():
-        a = line.strip().split(',')
+        a = line.decode('utf8').strip().split(',')
         
     
         a[1] = int(a[1])
