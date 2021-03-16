@@ -1,8 +1,10 @@
  # ~~mysql57_vs_8-benchmark_scripts~~
+
 ~~Benchmarking scripts for MySQL 5.7  vs MySQL 8.0 ~~
 
+Benchmarking scripts for MySQL 8.0(Local FS) vs MySQL 8.0(Fast CFS) 
 
-## Install MySQL
+## Install Two MySQL
 
 ```shell
 groupadd mysql
@@ -39,7 +41,7 @@ secure_file_priv=/usr/local/mysql/mysql-files
 local_infile=OFF
 ```
 
-### local mysql
+### Local MySQL
 ```shell
 cd /usr/local/mysql
 mkdir data
@@ -49,13 +51,13 @@ chown mysql:mysql data
 mysqld --defaults-file=/etc/my.cnf --initialize
 ```
 
-### cfs mysql
+### FastCFS MySQL
 ```
 cd /usr/local/fastcfs/fuse/fuse1/
 mkdir mysql && cd mysql && mkdir data
 chmod 750 data
 chown mysql:mysql data
-# 另外初始化
+# init
 mysqld --user=mysql --initialize \
   --datadir=/usr/local/fastcfs/fuse/fuse1/mysql/data \
   --socket=/tmp/mysql_cfs.sock \
@@ -65,7 +67,11 @@ mysqld --user=mysql --initialize \
   --local_infile=OFF
 ```
 
-mysqld.service
+### Systemctl
+
+create mysqld.service for Mysql of Local FS
+
+
 ```
 shell> cd /usr/lib/systemd/system
 shell> touch mysqld.service
@@ -112,19 +118,20 @@ Environment=MYSQLD_PARENT_PID=1
 PrivateTmp=false
 ```
 
-修改另一台
+for FastCFS
 ```
 cp mysqld.service mysqld_cfs.service
 
 # ExecStart=/usr/local/mysql/bin/mysqld --defaults-file=/etc/my.cnf --defaults-group-suffix=@%I $MYSQLD_OPTS
 ```
 
+### StartUp
 ```
-# 启动 
 systemctl start mysqld
 systemctl start mysqld@cfs
 ```
 
+change password
 ```
 mysql -uroot -p
 mysql -uroot -S/tmp/mysql_cfs.sock -p
@@ -134,7 +141,8 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';
 
 ```
 
-## 宿主机访问
+## Grant Privileges
+
 ```
 use mysql;
 CREATE USER 'root'@'192.168.99.1' IDENTIFIED BY 'chwing';
@@ -144,21 +152,23 @@ flush privileges;
 
 ## bench
 
-参照https://severalnines.com/database-blog/mysql-performance-benchmarking-mysql-57-vs-mysql-80
+Reference https://severalnines.com/database-blog/mysql-performance-benchmarking-mysql-57-vs-mysql-80
 
-### 测试工具
-[stsbench](https://github.com/akopytov/sysbench)
+### prebench
+
+* intstall[stsbench](https://github.com/akopytov/sysbench)
 
 ```
 mysql> create database sbtest;
 ```
 
+## to bench
 ```
 ./sb/prepare.sh
 ./sb/run.sh
 ```
 
-生成结果
+## csv to graph
 ```
 python3 to_graph.py 192.168.99.113-3306-local 192.168.99.113-3307-cfs
 ```
